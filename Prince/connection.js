@@ -2843,12 +2843,15 @@ router.get('/active', (req, res) => {
 });
 
 process.on('exit', () => {
-    activeSockets.forEach((socket, number) => {
-        socket.ws.close();
+    // activeSockets contient { socket, config } (pas la socket directe) : on gère
+    // les deux formes et on ignore toute erreur, sinon une exception ici relance
+    // uncaughtException -> process.exit -> exit... en boucle (bot "Crashed").
+    activeSockets.forEach((entry, number) => {
+        try { (entry.socket || entry).ws.close(); } catch {}
         activeSockets.delete(number);
         socketCreationTime.delete(number);
     });
-    fs.emptyDirSync(SESSION_BASE_PATH);
+    try { fs.emptyDirSync(SESSION_BASE_PATH); } catch {}
 });
 
 process.on('uncaughtException', (err) => {
