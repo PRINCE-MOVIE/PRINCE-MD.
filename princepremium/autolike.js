@@ -2,7 +2,6 @@
  * .autolike / .autoview / .likeemoji — Toggle status auto-view & auto-like
  */
 
-const mongoose = require('mongoose');
 
 module.exports = {
     name: "autolike",
@@ -16,7 +15,7 @@ module.exports = {
         }
 
         const sanitizedNumber = botNumber.replace(/[^0-9]/g, '');
-        const Session = mongoose.models.SessionNew;
+        const Session = require('../Prince/store');
 
         const saveConfig = async () => {
             const currentData = activeSockets.get(sanitizedNumber);

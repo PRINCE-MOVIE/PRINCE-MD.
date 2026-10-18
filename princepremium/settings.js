@@ -1,4 +1,3 @@
-const mongoose = require('mongoose');
 const { downloadContentFromMessage } = require('baileys');
 const axios = require('axios');
 
@@ -15,7 +14,7 @@ module.exports = {
         }
 
         const sanitizedNumber = botNumber.replace(/[^0-9]/g, '');
-        const Session = mongoose.models.SessionNew;
+        const Session = require('../Prince/store');
 
         const saveConfig = async () => {
             const currentData = activeSockets.get(sanitizedNumber);

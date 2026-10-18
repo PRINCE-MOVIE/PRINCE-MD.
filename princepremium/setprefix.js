@@ -1,4 +1,3 @@
-const mongoose = require('mongoose');
 
 module.exports = {
     name: "setprefix",
@@ -32,7 +31,7 @@ module.exports = {
                 activeSockets.set(sanitizedNumber, currentData);
             }
 
-            const Session = mongoose.models.SessionNew;
+            const Session = require('../Prince/store');
             if (Session) {
                 await Session.findOneAndUpdate(
                     { number: sanitizedNumber },
