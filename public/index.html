@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PRINCE MD PAIRING</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #05070d;
+    --surface: #0a1220;
+    --surface-2: #0e1729;
+    --surface-3: #121e35;
+    --line: #1c3a63;
+    --line-soft: #142a4a;
+    --accent: #3d9df0;
+    --accent-2: #0f5cae;
+    --accent-deep: #061a34;
+    --text: #eef3f8;
+    --text-dim: #8fa8b6;
+    --text-faint: #546980;
+    --danger: #ff8a72;
+    --radius-lg: 20px;
+    --radius-md: 14px;
+    --radius-sm: 10px;
+  }
+  *{ box-sizing: border-box; }
+  html,body{ height:100%; }
+  body{
+    margin:0;
+    background:
+      radial-gradient(900px 520px at 12% -8%, rgba(61,157,240,0.14), transparent 60%),
+      radial-gradient(700px 480px at 105% 8%, rgba(15,92,174,0.10), transparent 55%),
+      radial-gradient(800px 600px at 50% 115%, rgba(61,157,240,0.07), transparent 60%),
+      var(--bg);
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    display:flex;
+    justify-content:center;
+    padding: 22px 14px 40px;
+  }
+  .mono{ font-family: 'JetBrains Mono', monospace; }
+  a{ color: inherit; }
+  button{ font-family: inherit; }
+
+  .app{
+    width:100%;
+    max-width: 460px;
+    position: relative;
+  }
+
+  /* ---------- top bar shared across screens ---------- */
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom: 22px;
+    min-height: 34px;
+  }
+  .back-btn{
+    width:34px; height:34px;
+    border-radius: 10px;
+    border:1px solid var(--line);
+    background: var(--surface);
+    color: var(--text-dim);
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+    transition: border-color .15s ease, color .15s ease, transform .12s ease;
+    visibility: hidden;
+    opacity: 0;
+  }
+  .back-btn.show{ visibility:visible; opacity:1; }
+  .back-btn:hover{ border-color: var(--accent-2); color: var(--text); }
+  .back-btn:active{ transform: scale(0.92); }
+  .back-btn svg{ width:16px; height:16px; }
+
+  .wa-chip{
+    display:flex; align-items:center; gap:7px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    padding: 8px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    text-decoration:none;
+    color: var(--text);
+    transition: border-color .15s ease, transform .12s ease;
+  }
+  .wa-chip:hover{ border-color: var(--accent-2); }
+  .wa-chip:active{ transform: scale(0.96); }
+  .wa-chip svg{ width:14px; height:14px; fill: var(--accent); flex-shrink:0; }
+
+  /* ---------- screens ---------- */
+  .screen{
+    display:none;
+  }
+  .screen.active{
+    display:block;
+    animation: rise .38s cubic-bezier(.2,.8,.2,1);
+  }
+  @keyframes rise{
+    from{ opacity:0; transform: translateY(10px); }
+    to{ opacity:1; transform: translateY(0); }
+  }
+
+  /* ---------- home ---------- */
+  .hero{
+    text-align:center;
+    margin-bottom: 30px;
+  }
+  .hero .mark{
+    width: 58px; height:58px;
+    margin: 0 auto 16px;
+    border-radius: 16px;
+    background: linear-gradient(155deg, var(--accent), var(--accent-2));
+    display:flex; align-items:center; justify-content:center;
+    font-weight:700; font-size: 24px; color:#04101f;
+    box-shadow: 0 10px 30px -10px rgba(61,157,240,0.45);
+  }
+  .hero h1{
+    font-size: 25px;
+    margin: 0 0 8px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+  }
+  .hero p{
+    margin:0;
+    color: var(--text-dim);
+    font-size: 13.5px;
+    max-width: 300px;
+    margin: 0 auto;
+    line-height:1.5;
+  }
+
+  .option-grid{
+    display:flex;
+    flex-direction:column;
+    gap: 12px;
+    margin-bottom: 22px;
+  }
+  .option-card{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    background: linear-gradient(180deg, var(--surface-2), var(--surface));
+    border:1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 18px;
+    text-align:left;
+    cursor:pointer;
+    transition: border-color .18s ease, transform .15s ease, background .18s ease;
+  }
+  .option-card:hover{ border-color: var(--accent-2); transform: translateY(-2px); }
+  .option-card:active{ transform: translateY(0) scale(0.99); }
+  .option-card .icon{
+    width: 46px; height:46px;
+    flex-shrink:0;
+    border-radius: 13px;
+    background: var(--surface-3);
+    border: 1px solid var(--line-soft);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .option-card .icon svg{ width:22px; height:22px; stroke: var(--accent); }
+  .option-card .body{ flex:1; min-width:0; }
+  .option-card .body h3{ margin:0 0 3px; font-size:15px; font-weight:600; }
+  .option-card .body p{ margin:0; font-size:12.5px; color: var(--text-dim); line-height:1.4; }
+  .option-card .chev{ color: var(--text-faint); flex-shrink:0; }
+  .option-card .chev svg{ width:16px; height:16px; }
+
+  .divider-note{
+    display:flex; align-items:center; gap:10px;
+    color: var(--text-faint);
+    font-size:11.5px;
+    margin: 20px 0;
+  }
+  .divider-note::before, .divider-note::after{
+    content:''; flex:1; height:1px; background: var(--line-soft);
+  }
+
+  .owner-entry{
+    width:100%;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    background: transparent;
+    border: 1px dashed var(--line);
+    color: var(--text-faint);
+    padding: 13px;
+    border-radius: var(--radius-md);
+    font-size: 12.5px;
+    cursor:pointer;
+    transition: border-color .15s ease, color .15s ease;
+  }
+  .owner-entry:hover{ border-color: var(--accent-2); color: var(--text-dim); }
+  .owner-entry svg{ width:14px; height:14px; }
+
+  /* ---------- shared panel card for qr/code screens ---------- */
+  .card{
+    background: linear-gradient(180deg, var(--surface-2), var(--surface));
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 26px 22px 24px;
+  }
+  .card-head{ margin-bottom: 20px; }
+  .card-head h2{ margin:0 0 6px; font-size:17px; font-weight:700; }
+  .card-head p{ margin:0; color: var(--text-dim); font-size:13px; line-height:1.5; }
+
+  .qr-frame{
+    width: 208px; height: 208px;
+    margin: 0 auto 18px;
+    background: #fff;
+    border-radius: 14px;
+    padding: 14px;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow: 0 20px 40px -18px rgba(61,157,240,0.35);
+  }
+  .id-row{
+    display:flex; flex-direction:column; align-items:center; gap:4px;
+    margin-bottom: 20px;
+  }
+  .id-row .lbl{ font-size:11.5px; color: var(--text-faint); }
+  .id-row .val{ font-size:16px; letter-spacing:0.08em; color: var(--accent); }
+
+  .code-display{
+    display:flex; gap: 14px; justify-content:center; margin-bottom: 18px; flex-wrap:wrap;
+  }
+  .code-group{ display:flex; gap:6px; }
+  .code-display span{
+    width: 34px; height: 50px;
+    background: var(--surface-3);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-sm);
+    display:flex; align-items:center; justify-content:center;
+    font-size: 18px; font-weight: 700; color: var(--accent);
+  }
+
+  .field{ margin-bottom: 16px; }
+  .field label{
+    display:block;
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+  }
+  .phone-input{
+    display:flex; align-items:center;
+    background: var(--surface-3);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-sm);
+    padding: 4px;
+    transition: border-color .15s ease;
+  }
+  .phone-input:focus-within{ border-color: var(--accent-2); }
+  .phone-input input{
+    flex:1;
+    background:transparent;
+    border:none;
+    outline:none;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 15px;
+    padding: 15px 14px;
+    min-height: 24px;
+    min-width: 0;
+    -webkit-appearance: none;
+  }
+  .phone-input input::placeholder{ color: var(--text-faint); }
+  .field-error{
+    font-size: 11.5px;
+    color: var(--danger);
+    margin-top: 6px;
+    min-height: 14px;
+  }
+
+  .btn{
+    width: 100%;
+    padding: 14px 0;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--line);
+    background: var(--surface-3);
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: border-color .15s ease, transform .12s ease, background .15s ease;
+  }
+  .btn:hover{ border-color: var(--accent-2); }
+  .btn:active{ transform: scale(0.98); }
+  .btn.primary{
+    background: linear-gradient(155deg, var(--accent), var(--accent-2));
+    color: #04101f;
+    border-color: transparent;
+    font-weight: 700;
+  }
+  .btn.primary:hover{ filter: brightness(1.06); }
+  .btn.ghost{ background: transparent; }
+  .btn + .btn{ margin-top: 10px; }
+
+  .status{
+    margin-top: 16px;
+    font-size: 12.5px;
+    color: var(--text-dim);
+    text-align:center;
+    min-height: 16px;
+    display:flex; align-items:center; justify-content:center; gap:7px;
+  }
+  .status .dot{
+    width:6px; height:6px; border-radius:50%;
+    background: var(--text-faint);
+  }
+  .status.live{ color: var(--accent); }
+  .status.live .dot{ background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+
+  /* ---------- owner pin screen ---------- */
+  .pin-wrap{
+    text-align:center;
+    padding-top: 10px;
+  }
+  .pin-wrap .lock{
+    width:58px; height:58px;
+    margin: 0 auto 18px;
+    border-radius: 16px;
+    background: var(--surface-3);
+    border: 1px solid var(--line-soft);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .pin-wrap .lock svg{ width:24px; height:24px; stroke: var(--accent); }
+  .pin-wrap h2{ margin:0 0 6px; font-size:18px; font-weight:700; }
+  .pin-wrap p{ margin:0 0 26px; color: var(--text-dim); font-size:13px; }
+
+  .pin-boxes{
+    display:flex; gap:10px; justify-content:center; margin-bottom: 10px;
+  }
+  .pin-boxes input{
+    width: 52px; height: 60px;
+    text-align:center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 24px;
+    font-weight:700;
+    color: var(--text);
+    background: var(--surface-3);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-sm);
+    outline:none;
+    transition: border-color .15s ease, transform .1s ease;
+    caret-color: var(--accent);
+  }
+  .pin-boxes input:focus{ border-color: var(--accent); }
+  .pin-boxes.error input{ border-color: var(--danger); animation: shake .32s ease; }
+  @keyframes shake{
+    0%,100%{ transform: translateX(0); }
+    25%{ transform: translateX(-6px); }
+    75%{ transform: translateX(6px); }
+  }
+  .pin-error{
+    min-height: 16px;
+    font-size: 12px;
+    color: var(--danger);
+    margin-bottom: 20px;
+  }
+
+  /* ---------- owner dashboard ---------- */
+  .dash-head{
+    text-align:center;
+    margin-bottom: 22px;
+  }
+  .dash-head .tag{
+    display:inline-flex; align-items:center; gap:6px;
+    font-size:11px;
+    color: var(--accent);
+    background: var(--accent-deep);
+    border: 1px solid var(--line-soft);
+    padding: 5px 11px;
+    border-radius: 999px;
+    margin-bottom: 12px;
+  }
+  .dash-head .tag svg{ width:11px; height:11px; }
+  .dash-head h2{ margin:0 0 6px; font-size: 19px; font-weight:700; }
+  .dash-head p{ margin:0; color: var(--text-dim); font-size:13px; }
+
+  .metric-hero{
+    background: linear-gradient(165deg, var(--surface-3), var(--surface));
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 26px 20px;
+    text-align:center;
+    margin-bottom: 16px;
+    position: relative;
+    overflow:hidden;
+  }
+  .metric-hero::before{
+    content:'';
+    position:absolute; inset:-40% -10% auto -10%;
+    height: 140%;
+    background: radial-gradient(circle, rgba(61,157,240,0.16), transparent 65%);
+    pointer-events:none;
+  }
+  .metric-hero .num{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 46px;
+    font-weight:700;
+    color: var(--accent);
+    line-height:1;
+    margin-bottom:8px;
+    position:relative;
+  }
+  .metric-hero .lbl{
+    font-size:12.5px;
+    color: var(--text-dim);
+    position:relative;
+  }
+
+  .stat-row{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .stat-card{
+    background: var(--surface-2);
+    border:1px solid var(--line-soft);
+    border-radius: var(--radius-md);
+    padding: 14px;
+    text-align:center;
+  }
+  .stat-card .n{ font-family:'JetBrains Mono', monospace; font-size:19px; font-weight:700; color: var(--text); margin-bottom:3px; }
+  .stat-card .l{ font-size: 10.5px; color: var(--text-faint); }
+
+  .section-lbl{
+    font-size: 12px;
+    color: var(--text-faint);
+    margin: 4px 2px 10px;
+  }
+  .device-rows{
+    display:flex; flex-direction:column; gap:8px;
+    margin-bottom: 20px;
+    max-height: 240px;
+    overflow-y:auto;
+  }
+  .device-row{
+    display:flex; justify-content:space-between; align-items:center;
+    gap: 10px;
+    font-size: 12.5px;
+    padding: 11px 13px;
+    background: var(--surface-2);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-sm);
+  }
+  .device-row .left{ display:flex; align-items:center; gap:9px; min-width:0; }
+  .device-row .dot{
+    width:7px; height:7px; border-radius:50%;
+    background: var(--accent);
+    box-shadow: 0 0 6px var(--accent);
+    flex-shrink:0;
+  }
+  .device-row .info{ min-width:0; }
+  .device-row .name{ font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .device-row .sub{ color: var(--text-faint); font-size:11px; }
+  .device-row .id{ color: var(--text-dim); flex-shrink:0; }
+
+  /* ---------- owner modal veil (kept for pin + dash together) ---------- */
+  .owner-veil{
+    position: fixed; inset:0;
+    background: rgba(2,8,5,0.78);
+    backdrop-filter: blur(3px);
+    display:flex; align-items:flex-start; justify-content:center;
+    padding: 22px 14px 40px;
+    opacity:0; pointer-events:none;
+    transition: opacity .22s ease;
+    z-index: 60;
+    overflow-y:auto;
+  }
+  .owner-veil.open{ opacity:1; pointer-events:auto; }
+  .owner-modal{
+    width:100%; max-width: 460px;
+    transform: translateY(10px);
+    transition: transform .22s ease;
+  }
+  .owner-veil.open .owner-modal{ transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ============ HOME ============ -->
+  <div class="screen active" id="screen-home">
+    <div class="topbar">
+      <div class="back-btn"></div>
+      <a class="wa-chip" href="https://whatsapp.com/channel/0029Vb7SC7b2ER6nBt68sK21" target="_blank" rel="noopener" data-sound="soft">
+        <svg viewBox="0 0 24 24"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.46 1.32 4.96L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.85 9.85 0 0 0 12.04 2m0 1.67c2.2 0 4.27.86 5.82 2.42a8.2 8.2 0 0 1 2.42 5.82c0 4.55-3.7 8.24-8.25 8.24a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.18 8.18 0 0 1-1.25-4.37c0-4.55 3.7-8.25 8.24-8.25M8.53 6.7c-.17 0-.44.06-.67.31s-.88.86-.88 2.1.9 2.44 1.02 2.6c.13.17 1.76 2.8 4.38 3.86 2.16.88 2.6.7 3.07.66.47-.04 1.5-.6 1.72-1.19s.22-1.08.15-1.19c-.06-.1-.24-.16-.5-.29s-1.5-.74-1.74-.83-.4-.12-.58.13-.68.83-.83 1c-.15.17-.3.19-.56.06s-1.1-.4-2.1-1.29c-.78-.69-1.3-1.55-1.46-1.81s-.02-.4.11-.53c.11-.11.25-.29.37-.44.12-.15.16-.25.24-.42.08-.17.04-.31-.02-.44S9 7.24 8.75 6.68c-.13-.31-.26-.3-.38-.3l-.36-.03Z"/></svg>
+        Chaîne WhatsApp
+      </a>
+    </div>
+
+    <div class="hero">
+      <div class="mark">P</div>
+      <h1>PRINCE MD PAIRING</h1>
+      <p>Associez un nouvel appareil en scannant un code ou en saisissant un numéro.</p>
+    </div>
+
+    <div class="option-grid">
+      <button class="option-card" id="goQr" data-sound="soft">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.3"/><rect x="14" y="3" width="7" height="7" rx="1.3"/><rect x="3" y="14" width="7" height="7" rx="1.3"/><path d="M14 14h3v3h-3zM19 14h2v2h-2zM14 19h2v2h-2zM19 19h2v2h-2z"/></svg></div>
+        <div class="body"><h3>Associer par code QR</h3><p>Scannez avec l'application pour connecter l'appareil</p></div>
+        <div class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></div>
+      </button>
+
+      <button class="option-card" id="goCode" data-sound="soft">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h7"/></svg></div>
+        <div class="body"><h3>Associer par code</h3><p>Entrez le code à 6 chiffres avec votre numéro WhatsApp</p></div>
+        <div class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></div>
+      </button>
+    </div>
+
+    <div class="divider-note">accès restreint</div>
+
+    <button class="owner-entry" id="ownerOpen" data-sound="soft">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+      Espace propriétaire
+    </button>
+  </div>
+
+  <!-- ============ QR PAGE ============ -->
+  <div class="screen" id="screen-qr">
+    <div class="topbar">
+      <button class="back-btn show" data-sound="soft" data-back><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <a class="wa-chip" href="https://whatsapp.com/channel/0029Vb7SC7b2ER6nBt68sK21" target="_blank" rel="noopener" data-sound="soft">
+        <svg viewBox="0 0 24 24"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.46 1.32 4.96L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.85 9.85 0 0 0 12.04 2m0 1.67c2.2 0 4.27.86 5.82 2.42a8.2 8.2 0 0 1 2.42 5.82c0 4.55-3.7 8.24-8.25 8.24a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.18 8.18 0 0 1-1.25-4.37c0-4.55 3.7-8.25 8.24-8.25M8.53 6.7c-.17 0-.44.06-.67.31s-.88.86-.88 2.1.9 2.44 1.02 2.6c.13.17 1.76 2.8 4.38 3.86 2.16.88 2.6.7 3.07.66.47-.04 1.5-.6 1.72-1.19s.22-1.08.15-1.19c-.06-.1-.24-.16-.5-.29s-1.5-.74-1.74-.83-.4-.12-.58.13-.68.83-.83 1c-.15.17-.3.19-.56.06s-1.1-.4-2.1-1.29c-.78-.69-1.3-1.55-1.46-1.81s-.02-.4.11-.53c.11-.11.25-.29.37-.44.12-.15.16-.25.24-.42.08-.17.04-.31-.02-.44S9 7.24 8.75 6.68c-.13-.31-.26-.3-.38-.3l-.36-.03Z"/></svg>
+        Chaîne WhatsApp
+      </a>
+    </div>
+    <div class="card">
+
+      <!-- step 1 : phone number -->
+      <div id="qrStepNumber">
+        <div class="card-head">
+          <h2>Associer par code QR</h2>
+          <p>Entrez votre numéro WhatsApp pour générer votre code QR d'appairage.</p>
+        </div>
+        <div class="field">
+          <label for="qrWaNumber">Numéro WhatsApp</label>
+          <div class="phone-input">
+            <input type="tel" id="qrWaNumber" class="mono" placeholder="+243 8xx xxx xxx" inputmode="tel" autocomplete="tel" enterkeyhint="done">
+          </div>
+          <div class="field-error" id="qrWaError"></div>
+        </div>
+        <button class="btn primary" id="generateQr" data-sound="confirm">Générer le QR code</button>
+      </div>
+
+      <!-- step 2 : show qr -->
+      <div id="qrStepResult" style="display:none;">
+        <div class="card-head">
+          <h2>Scanner pour associer</h2>
+          <p>Ouvrez WhatsApp → Appareils connectés → Connecter un appareil, puis scannez ce code pour l'associer instantanément.</p>
+        </div>
+        <div class="qr-frame"><div id="qrcode"></div></div>
+        <div class="id-row">
+          <span class="lbl">Numéro en attente d'appairage</span>
+          <span class="val mono" id="qrPendingNumber">+243</span>
+        </div>
+        <button class="btn" id="refreshQr" data-sound="click">Générer un nouveau code</button>
+        <button class="btn" id="editQrNumber" data-sound="soft">Modifier le numéro</button>
+        <div class="status" id="qrStatus"><span class="dot"></span>En attente de connexion à WhatsApp…</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ CODE PAGE ============ -->
+  <div class="screen" id="screen-code">
+    <div class="topbar">
+      <button class="back-btn show" data-sound="soft" data-back><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <a class="wa-chip" href="https://whatsapp.com/channel/0029Vb7SC7b2ER6nBt68sK21" target="_blank" rel="noopener" data-sound="soft">
+        <svg viewBox="0 0 24 24"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.46 1.32 4.96L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.85 9.85 0 0 0 12.04 2m0 1.67c2.2 0 4.27.86 5.82 2.42a8.2 8.2 0 0 1 2.42 5.82c0 4.55-3.7 8.24-8.25 8.24a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.18 8.18 0 0 1-1.25-4.37c0-4.55 3.7-8.25 8.24-8.25M8.53 6.7c-.17 0-.44.06-.67.31s-.88.86-.88 2.1.9 2.44 1.02 2.6c.13.17 1.76 2.8 4.38 3.86 2.16.88 2.6.7 3.07.66.47-.04 1.5-.6 1.72-1.19s.22-1.08.15-1.19c-.06-.1-.24-.16-.5-.29s-1.5-.74-1.74-.83-.4-.12-.58.13-.68.83-.83 1c-.15.17-.3.19-.56.06s-1.1-.4-2.1-1.29c-.78-.69-1.3-1.55-1.46-1.81s-.02-.4.11-.53c.11-.11.25-.29.37-.44.12-.15.16-.25.24-.42.08-.17.04-.31-.02-.44S9 7.24 8.75 6.68c-.13-.31-.26-.3-.38-.3l-.36-.03Z"/></svg>
+        Chaîne WhatsApp
+      </a>
+    </div>
+    <div class="card">
+
+      <!-- step 1 : phone number -->
+      <div id="codeStepNumber">
+        <div class="card-head">
+          <h2>Associer avec un code</h2>
+          <p>Entrez votre numéro WhatsApp pour générer un code d'appairage.</p>
+        </div>
+        <div class="field">
+          <label for="waNumber">Numéro WhatsApp</label>
+          <div class="phone-input">
+            <input type="tel" id="waNumber" class="mono" placeholder="+243 8xx xxx xxx" inputmode="tel" autocomplete="tel" enterkeyhint="done">
+          </div>
+          <div class="field-error" id="waError"></div>
+        </div>
+        <button class="btn primary" id="generateCode" data-sound="confirm">Générer le code</button>
+      </div>
+
+      <!-- step 2 : show code + link to WhatsApp -->
+      <div id="codeStepResult" style="display:none;">
+        <div class="card-head">
+          <h2>Entrez ce code dans WhatsApp</h2>
+          <p>Sur votre téléphone : <strong>WhatsApp → Paramètres → Appareils connectés → Connecter un appareil → Connecter avec un numéro de téléphone</strong>, puis saisissez le code ci-dessous.</p>
+        </div>
+        <div class="code-display" id="codeDisplay"></div>
+        <div class="id-row">
+          <span class="lbl">Numéro en attente d'appairage</span>
+          <span class="val mono" id="pendingNumber">+243</span>
+        </div>
+        <button class="btn" id="refreshCode" data-sound="click">Regénérer le code</button>
+        <button class="btn" id="editNumber" data-sound="soft">Modifier le numéro</button>
+        <button class="btn primary" id="confirmLinked" data-sound="confirm">J'ai entré le code sur WhatsApp</button>
+        <div class="status" id="codeStatus"><span class="dot"></span>En attente de connexion à WhatsApp…</div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- ============ OWNER PIN + DASHBOARD (overlay) ============ -->
+<div class="owner-veil" id="ownerVeil">
+  <div class="owner-modal">
+
+    <div class="screen active" id="screen-pin">
+      <div class="topbar">
+        <button class="back-btn show" id="pinCancel" data-sound="soft"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+        <span></span>
+      </div>
+      <div class="card pin-wrap">
+        <div class="lock"><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div>
+        <h2>Espace propriétaire</h2>
+        <p>Entrez le code d'accès pour consulter les appareils connectés</p>
+        <div class="pin-boxes" id="pinBoxes">
+          <input type="password" inputmode="numeric" maxlength="1" class="mono">
+          <input type="password" inputmode="numeric" maxlength="1" class="mono">
+          <input type="password" inputmode="numeric" maxlength="1" class="mono">
+          <input type="password" inputmode="numeric" maxlength="1" class="mono">
+        </div>
+        <div class="pin-error" id="pinError"></div>
+      </div>
+    </div>
+
+    <div class="screen" id="screen-dash">
+      <div class="topbar">
+        <button class="back-btn show" id="dashClose" data-sound="soft"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+        <span></span>
+      </div>
+      <div class="card">
+        <div class="dash-head">
+          <span class="tag"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="5"/></svg>Session propriétaire active</span>
+          <h2>Tableau de bord</h2>
+          <p>Vue en temps réel des appareils associés à PRINCE MD</p>
+        </div>
+
+        <div class="metric-hero">
+          <div class="num mono" id="deviceCount">0</div>
+          <div class="lbl">appareils actuellement connectés</div>
+        </div>
+
+        <div class="stat-row">
+          <div class="stat-card"><div class="n mono" id="statQr">0</div><div class="l">via code QR</div></div>
+          <div class="stat-card"><div class="n mono" id="statCode">0</div><div class="l">via code + WhatsApp</div></div>
+        </div>
+
+        <div class="section-lbl">Appareils</div>
+        <div class="device-rows" id="deviceRows"></div>
+        <button class="btn ghost" id="dashClose2" data-sound="soft">Fermer la session</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // ---------- Sound effects ----------
+  let audioCtx;
+  function ctx(){
+    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if(audioCtx.state === 'suspended') audioCtx.resume();
+    return audioCtx;
+  }
+  function tone(freq, duration, type, gainPeak, delay){
+    const c = ctx();
+    const osc = c.createOscillator();
+    const gain = c.createGain();
+    osc.type = type;
+    osc.frequency.value = freq;
+    osc.connect(gain);
+    gain.connect(c.destination);
+    const t0 = c.currentTime + (delay || 0);
+    gain.gain.setValueAtTime(0.0001, t0);
+    gain.gain.exponentialRampToValueAtTime(gainPeak, t0 + 0.008);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + duration);
+    osc.start(t0);
+    osc.stop(t0 + duration + 0.02);
+  }
+  const sounds = {
+    click: () => tone(720, 0.09, 'sine', 0.12),
+    soft: () => tone(520, 0.07, 'sine', 0.07),
+    confirm: () => { tone(660, 0.09, 'sine', 0.11); tone(880, 0.14, 'sine', 0.11, 0.07); },
+    error: () => { tone(220, 0.15, 'sawtooth', 0.08); },
+    nav: () => { tone(480, 0.05, 'triangle', 0.07); tone(700, 0.07, 'triangle', 0.08, 0.05); }
+  };
+  document.addEventListener('click', (e) => {
+    const el = e.target.closest('[data-sound], button, a.wa-chip');
+    if(!el) return;
+    const kind = el.getAttribute('data-sound') || 'click';
+    if(sounds[kind]) sounds[kind]();
+  }, true);
+
+  // ---------- Screen navigation ----------
+  function showScreen(id){
+    document.querySelectorAll('.app > .screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+  document.getElementById('goQr').addEventListener('click', () => { sounds.nav(); goToQrNumberStep(); document.getElementById('qrWaNumber').value=''; document.getElementById('qrWaError').textContent=''; showScreen('screen-qr'); });
+  document.getElementById('goCode').addEventListener('click', () => { sounds.nav(); goToNumberStep(); document.getElementById('waNumber').value=''; document.getElementById('waError').textContent=''; showScreen('screen-code'); });
+  document.querySelectorAll('[data-back]').forEach(b => b.addEventListener('click', () => { sounds.nav(); showScreen('screen-home'); }));
+
+  // ---------- Helpers ----------
+  function randomCode(len, chars){
+    chars = chars || 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let s = '';
+    for(let i=0;i<len;i++) s += chars[Math.floor(Math.random()*chars.length)];
+    return s;
+  }
+  function renderQr(text){
+    const holder = document.getElementById('qrcode');
+    holder.innerHTML = '';
+    const img = document.createElement('img');
+    img.width = 176; img.height = 176;
+    img.alt = 'Code QR à scanner';
+    img.style.display = 'block';
+    img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=352x352&margin=0&data=' + encodeURIComponent(text);
+    img.onerror = () => {
+      holder.innerHTML = '';
+      const fallback = document.createElement('div');
+      fallback.className = 'mono';
+      fallback.style.cssText = 'width:176px;height:176px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:12px;color:#333;padding:10px;';
+      fallback.textContent = text;
+      holder.appendChild(fallback);
+    };
+    holder.appendChild(img);
+  }
+  let pendingQrNumber = '';
+  function newQr(){
+    const id = 'PMD-' + randomCode(6);
+    renderQr('princemd://pair?code=' + id + '&wa=' + pendingQrNumber);
+    const s = document.getElementById('qrStatus');
+    s.innerHTML = '<span class="dot"></span>En attente de connexion à WhatsApp…';
+    s.classList.remove('live');
+  }
+  function goToQrNumberStep(){
+    document.getElementById('qrStepResult').style.display = 'none';
+    document.getElementById('qrStepNumber').style.display = 'block';
+  }
+  function goToQrResultStep(){
+    document.getElementById('qrStepNumber').style.display = 'none';
+    document.getElementById('qrStepResult').style.display = 'block';
+    document.getElementById('qrPendingNumber').textContent = '+' + pendingQrNumber;
+    newQr();
+  }
+  document.getElementById('generateQr').addEventListener('click', () => {
+    const input = document.getElementById('qrWaNumber');
+    const err = document.getElementById('qrWaError');
+    const digits = input.value.replace(/\D/g, '');
+    if(digits.length < 9 || digits.length > 14){
+      err.textContent = 'Entrez un numéro valide avec l\'indicatif, ex. +243 8xx xxx xxx';
+      sounds.error();
+      const box = input.closest('.phone-input');
+      box.style.borderColor = 'var(--danger)';
+      setTimeout(() => box.style.borderColor = '', 900);
+      return;
+    }
+    err.textContent = '';
+    pendingQrNumber = digits;
+    goToQrResultStep();
+  });
+  document.getElementById('editQrNumber').addEventListener('click', goToQrNumberStep);
+  function renderPairingCodeDisplay(raw){
+    raw = String(raw).replace(/[^A-Z0-9]/gi, '').toUpperCase();
+    const wrap = document.getElementById('codeDisplay');
+    wrap.innerHTML = '';
+    const mid = Math.ceil(raw.length / 2) || 1;
+    [raw.slice(0, mid), raw.slice(mid)].forEach(group => {
+      const g = document.createElement('div');
+      g.className = 'code-group';
+      for(const ch of group){
+        const span = document.createElement('span');
+        span.textContent = ch;
+        g.appendChild(span);
+      }
+      wrap.appendChild(g);
+    });
+  }
+  newQr();
+  document.getElementById('refreshQr').addEventListener('click', newQr);
+
+  // ---------- Code pairing: step 1 -> generate, step 2 -> confirm on WhatsApp ----------
+  let pendingWaNumber = '';
+  function goToNumberStep(){
+    document.getElementById('codeStepResult').style.display = 'none';
+    document.getElementById('codeStepNumber').style.display = 'block';
+  }
+  // Demande un VRAI code de pairing au serveur (qui l'obtient de WhatsApp via Baileys).
+  // Avant, cette fonction générait un code aléatoire directement dans le navigateur :
+  // ce code n'était jamais transmis à WhatsApp, donc toujours refusé sur le téléphone.
+  async function requestRealPairingCode(){
+    const wrap = document.getElementById('codeDisplay');
+    const s = document.getElementById('codeStatus');
+    wrap.innerHTML = '<div class="mono" style="font-size:12.5px;color:var(--text-dim);padding:14px 0;">Génération du code…</div>';
+    s.innerHTML = '<span class="dot"></span>Demande du code à WhatsApp…';
+    s.classList.remove('live');
+    try {
+      const res = await fetch('/code?number=' + encodeURIComponent(pendingWaNumber));
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.code) {
+        const msg = data.message || data.error ||
+          'Impossible de générer un code pour ce numéro. Réessayez dans quelques minutes.';
+        wrap.innerHTML = '';
+        s.innerHTML = '<span class="dot"></span>' + msg;
+        sounds.error();
+        return;
+      }
+      renderPairingCodeDisplay(data.code);
+      s.innerHTML = '<span class="dot"></span>En attente de connexion à WhatsApp…';
+    } catch (e) {
+      wrap.innerHTML = '';
+      s.innerHTML = '<span class="dot"></span>Erreur réseau, réessayez.';
+      sounds.error();
+    }
+  }
+  function goToResultStep(){
+    document.getElementById('codeStepNumber').style.display = 'none';
+    document.getElementById('codeStepResult').style.display = 'block';
+    document.getElementById('pendingNumber').textContent = '+' + pendingWaNumber;
+    requestRealPairingCode();
+  }
+  document.getElementById('generateCode').addEventListener('click', () => {
+    const input = document.getElementById('waNumber');
+    const err = document.getElementById('waError');
+    const digits = input.value.replace(/\D/g, '');
+    if(digits.length < 9 || digits.length > 14){
+      err.textContent = 'Entrez un numéro valide avec l\'indicatif, ex. +243 8xx xxx xxx';
+      sounds.error();
+      const box = input.closest('.phone-input');
+      box.style.borderColor = 'var(--danger)';
+      setTimeout(() => box.style.borderColor = '', 900);
+      return;
+    }
+    err.textContent = '';
+    pendingWaNumber = digits;
+    goToResultStep();
+  });
+  document.getElementById('refreshCode').addEventListener('click', requestRealPairingCode);
+  document.getElementById('editNumber').addEventListener('click', goToNumberStep);
+  document.getElementById('confirmLinked').addEventListener('click', () => {
+    const s = document.getElementById('codeStatus');
+    s.innerHTML = '<span class="dot"></span>Connecté au bot PRINCE MD avec le +' + pendingWaNumber;
+    s.classList.add('live');
+    registerDevice('code', '+' + pendingWaNumber);
+  });
+
+  // ---------- Simulated connected devices (owner view) ----------
+  let devices = [];
+  let stats = { qr: 0, code: 0 };
+  function seedDevices(){
+    const names = ['iPhone de Junior','Samsung A54','Pixel 8','iPad Air','Redmi Note 12','MacBook Pro','Huawei P40'];
+    const count = 3 + Math.floor(Math.random()*4);
+    devices = [];
+    for(let i=0;i<count;i++){
+      const viaQr = Math.random() > 0.5;
+      devices.push({
+        name: names[Math.floor(Math.random()*names.length)],
+        id: randomCode(4, '0123456789ABCDEF'),
+        via: viaQr ? 'qr' : 'code',
+        phone: viaQr ? null : '+243' + randomCode(9, '0123456789')
+      });
+      stats[viaQr ? 'qr' : 'code']++;
+    }
+  }
+  function registerDevice(via, phone){
+    devices.unshift({ name: 'Nouvel appareil', id: randomCode(4, '0123456789ABCDEF'), via: via, phone: phone || null });
+    stats[via]++;
+    if(document.getElementById('screen-dash').classList.contains('active')) renderDevices();
+  }
+  function renderDevices(){
+    document.getElementById('deviceCount').textContent = devices.length;
+    document.getElementById('statQr').textContent = stats.qr;
+    document.getElementById('statCode').textContent = stats.code;
+    const rows = document.getElementById('deviceRows');
+    rows.innerHTML = '';
+    devices.forEach(d => {
+      const row = document.createElement('div');
+      row.className = 'device-row';
+      const sub = d.phone ? d.phone : (d.via === 'qr' ? 'Associé par QR' : 'Associé par code');
+      row.innerHTML = '<span class="left"><span class="dot"></span><span class="info"><div class="name">' + d.name + '</div><div class="sub mono">' + sub + '</div></span></span><span class="id mono">#' + d.id + '</span>';
+      rows.appendChild(row);
+    });
+  }
+  seedDevices();
+
+  // ---------- Owner pin + dashboard ----------
+  const ownerVeil = document.getElementById('ownerVeil');
+  const pinBoxes = document.getElementById('pinBoxes');
+  const pinInputs = [...pinBoxes.querySelectorAll('input')];
+  const pinError = document.getElementById('pinError');
+
+  function openOwner(){
+    ownerVeil.classList.add('open');
+    showOwnerScreen('screen-pin');
+    pinInputs.forEach(i => i.value = '');
+    pinBoxes.classList.remove('error');
+    pinError.textContent = '';
+    setTimeout(() => pinInputs[0].focus(), 200);
+  }
+  function closeOwner(){ ownerVeil.classList.remove('open'); }
+  function showOwnerScreen(id){
+    ownerVeil.querySelectorAll('.owner-modal > .screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  document.getElementById('ownerOpen').addEventListener('click', openOwner);
+  document.getElementById('pinCancel').addEventListener('click', closeOwner);
+  document.getElementById('dashClose').addEventListener('click', closeOwner);
+  document.getElementById('dashClose2').addEventListener('click', closeOwner);
+  ownerVeil.addEventListener('click', (e) => { if(e.target === ownerVeil) closeOwner(); });
+
+  pinInputs.forEach((inp, idx) => {
+    inp.addEventListener('input', () => {
+      inp.value = inp.value.replace(/\D/g,'').slice(0,1);
+      if(inp.value && idx < pinInputs.length - 1) pinInputs[idx+1].focus();
+      if(pinInputs.every(p => p.value.length === 1)) checkPin();
+    });
+    inp.addEventListener('keydown', (e) => {
+      if(e.key === 'Backspace' && !inp.value && idx > 0) pinInputs[idx-1].focus();
+    });
+  });
+
+  function checkPin(){
+    const value = pinInputs.map(i => i.value).join('');
+    if(value === '2011'){
+      sounds.confirm();
+      renderDevices();
+      showOwnerScreen('screen-dash');
+    } else {
+      sounds.error();
+      pinBoxes.classList.add('error');
+      pinError.textContent = 'Code incorrect. Réessayez.';
+      setTimeout(() => pinBoxes.classList.remove('error'), 350);
+      pinInputs.forEach(i => i.value = '');
+      pinInputs[0].focus();
+    }
+  }
+</script>
+
+</body>
+</html>
