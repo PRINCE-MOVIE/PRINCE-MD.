@@ -7,7 +7,6 @@ const {
 const { sms } = require("./msg");
 const router = express.Router();
 const pino = require('pino');
-const mongoose = require('mongoose');
 const moment = require('moment-timezone');
 const Jimp = require('jimp');
 const crypto = require('crypto');
@@ -117,59 +116,10 @@ function localSessionPaired(sessionPath) {
 }
 const NUMBER_LIST_PATH = './numbers.json';
 
-const SessionSchema = new mongoose.Schema({
-    number: {
-        type: String,
-        unique: true,
-        required: true
-    },
-    creds: {
-        type: Object,
-        required: true
-    },
-    // Contient TOUS les fichiers du dossier de session (creds.json + les clés
-    // Signal : session-*.json, sender-key-*.json, pre-key-*.json,
-    // app-state-sync-key-*.json...). Avant ce correctif, seul creds.json était
-    // sauvegardé/restauré : sur un hébergeur au disque éphémère comme Railway,
-    // chaque redémarrage effaçait les clés de session Signal alors que l'autre
-    // bout (WhatsApp/le téléphone) continuait d'utiliser l'ancien état du
-    // "ratchet". Résultat : dès qu'un message arrivait avec l'ancien état,
-    // le déchiffrement échouait avec "Bad MAC Error", en boucle.
-    files: {
-        type: Object,
-        default: {}
-    },
-    config: {
-        type: Object
-    },
-    updatedAt: {
-        type: Date,
-        default: Date.now
-    }
-});
+// Sessions stockées en fichiers JSON (plus de MongoDB)
+const Session = require('./store');
 
-const Session = mongoose.model('SessionNew', SessionSchema); 
-
-async function connectMongoDB() {
-    try {
-        
-const mongoUri = process.env.MONGODB_URI;
-        if (!mongoUri) {
-            console.error('MONGODB_URI is not set. Add it to your .env file.');
-            process.exit(1);
-        }
-        await mongoose.connect(mongoUri, {
-            bufferCommands: false,
-            serverSelectionTimeoutMS: 5000 
-        });
-        console.log('Connected to MongoDB');
-    } catch (error) {
-        console.error('MongoDB connection failed:', error);
-        process.exit(1);
-    }
-}
 (async () => {
-    await connectMongoDB();
     // BUG TROUVÉ : cette fonction existait déjà dans le code mais n'était
     // jamais appelée nulle part. Résultat : après CHAQUE redémarrage du
     // process (redeploy Railway, crash géré par uncaughtException, etc.),
@@ -608,7 +558,7 @@ async function saveSession(number, creds) {
             numbers.push(sanitizedNumber);
             fs.writeFileSync(NUMBER_LIST_PATH, JSON.stringify(numbers, null, 2));
         }
-        console.log(`Saved session for ${sanitizedNumber} to MongoDB (${Object.keys(files).length} fichiers), local storage, and numbers.json`);
+        console.log(`Saved session for ${sanitizedNumber} to local store (${Object.keys(files).length} fichiers), local storage, and numbers.json`);
     } catch (error) {
         console.error(`Failed to save session for ${sanitizedNumber}:`, error);
     }
@@ -642,7 +592,7 @@ async function restoreSession(number) {
                     console.error(`Failed to restore session file ${filename}:`, e.message);
                 }
             }
-            console.log(`Restored ${fileNames.length} fichiers de session pour ${sanitizedNumber} depuis MongoDB (clés Signal incluses)`);
+            console.log(`Restored ${fileNames.length} fichiers de session pour ${sanitizedNumber} depuis le stockage local (clés Signal incluses)`);
         } else {
             // Anciennes sessions sauvegardées avant ce correctif : on n'a que
             // creds.json, donc le "Bad MAC" peut se reproduire une fois avant
@@ -1239,7 +1189,6 @@ async function setupCommandHandlers(socket, number) {
 
                 sessionConfig.MODE = newMode;
                 
-                const Session = mongoose.models.SessionNew;
                 const sNum = botNumber.replace(/[^0-9]/g, '');
                 if (activeSockets.has(sNum)) {
                     const currentData = activeSockets.get(sNum);
